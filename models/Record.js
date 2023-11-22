@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 
-const db = require("../db/conn");
+const db = require("../db/connection");
 
 const Record = db.define("Record", {
   percentage: {
