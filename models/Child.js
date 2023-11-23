@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 
+const User = require('./User')
 const db = require("../db/connection");
 
 const Child = db.define("Child", {
@@ -13,8 +14,8 @@ const Child = db.define("Child", {
     allowNull: false,
     require: true,
   },
-  age: {
-    type: DataTypes.INTEGER,
+  birth: {
+    type: DataTypes.DATEONLY,
     allowNull: false,
     require: true,
   },

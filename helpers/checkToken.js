@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 
 // middleware para validar o token
 const checkToken = (req, res, next) => {
+  console.log(req)
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 

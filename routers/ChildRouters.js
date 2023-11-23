@@ -1,18 +1,11 @@
 const router = require('express').Router()
 
-const UserController = require('../controllers/UserController')
+const ChildController = require('../controllers/ChildController')
 
 // middlewares
 const verifyToken = require("../helpers/checkToken");
 
-router.post('/register', UserController.register)
-router.post('/login', UserController.login)
-router.get("/checkuser", UserController.checkUser);
-router.get("/:id", UserController.getUserById);
-router.patch(
-  "/edit/:id",
-  verifyToken,
-  UserController.updateUser
-);
+router.post('/create', verifyToken, ChildController.createChild)
+router.post('/all', verifyToken, ChildController.getAllChildren)
 
 module.exports = router

@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 
+const Child = require("./Child")
 const db = require("../db/connection");
 
 const Test = db.define("Test", {

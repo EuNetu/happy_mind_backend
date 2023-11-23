@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 
+const Child = require("./Child")
 const db = require("../db/connection");
 
 const Record = db.define("Record", {
@@ -8,17 +9,11 @@ const Record = db.define("Record", {
     allowNull: false,
     require: true,
   },
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false,
-    require: true,
-  },
   note: {
     type: DataTypes.STRING,
     allowNull: false,
     require: true,
   },
-
 });
 
 Record.belongsTo(Child);
