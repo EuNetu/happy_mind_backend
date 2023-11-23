@@ -5,14 +5,14 @@ const createToken = async (user, req, res) => {
   // cria o token
   const token = jwt.sign({
     name: user.name,
-    id: user._id
+    id: user.id
   }, 'happymind')
 
   // retorna o token
   res.status(201).json({
     message: 'AUTENTICADO',
     token: token,
-    userId: user._id
+    userId: user.id
   })
 }
 
