@@ -19,9 +19,11 @@ app.use(express.json())
 // Rotas
 const UserRouters = require('./routers/UserRoutes')
 const ChildRouters = require('./routers/ChildRouters')
+const RecordRouters = require('./routers/RecordRouters')
 
 app.use('/user', UserRouters)
 app.use('/child', ChildRouters)
+app.use('/record', RecordRouters)
 
 //sincronizar com o banco e observar a aplicação na porta 8000
 connection
