@@ -1,9 +1,14 @@
 const { DataTypes } = require("sequelize");
 
-const Student = require("./Student")
+const User = require("./User")
 const db = require("../db/connection");
 
-const Record = db.define("Record", {
+const TeacherRecord = db.define("TeacherRecord", {
+  teacher: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    require: true,
+  },
   forwarding: {
     type: DataTypes.STRING,
   },
@@ -19,7 +24,7 @@ const Record = db.define("Record", {
   },
 });
 
-Record.belongsTo(Student);
-Student.hasMany(Record);
+TeacherRecord.belongsTo(User);
+User.hasMany(TeacherRecord);
 
-module.exports = Record;
+module.exports = TeacherRecord;

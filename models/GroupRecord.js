@@ -1,27 +1,30 @@
 const { DataTypes } = require("sequelize");
 
-const User = require('./User')
+const User = require("./User")
 const db = require("../db/connection");
 
-const Child = db.define("Child", {
-  name: {
+const GroupRecord = db.define("GroupRecord", {
+  reason: {
     type: DataTypes.STRING,
     allowNull: false,
     require: true,
   },
-  lastName: {
+  forwarding: {
     type: DataTypes.STRING,
+  },
+  multidisciplinary: {
+    type: DataTypes.BOOLEAN,
     allowNull: false,
     require: true,
   },
-  birth: {
-    type: DataTypes.DATEONLY,
+  note: {
+    type: DataTypes.TEXT,
     allowNull: false,
     require: true,
   },
 });
 
-Child.belongsTo(User);
-User.hasMany(Child);
+GroupRecord.belongsTo(User);
+User.hasMany(GroupRecord);
 
-module.exports = Child;
+module.exports = GroupRecord;

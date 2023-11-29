@@ -1,14 +1,14 @@
-const Record = require('../models/Record')
+const ResponsibleRecord = require('../models/ResponsibleRecord')
 const Student = require('../models/Student')
 
 const getUserByToken = require('../helpers/getUserByToken')
 const getToken = require('../helpers/getToken')
 
-module.exports = class RecordController {
+module.exports = class ResponsibleRecordController {
   static async createRecord(req, res) {
-    const { note, forwarding } = req.body
+    const { responsible, note, forwarding } = req.body
     const idStudent = req.params.id
-    if (!note) {
+    if (!responsible || !note) {
       res.status(422).json({ message: "Envie todas as informações." })
       return
     }
@@ -20,6 +20,7 @@ module.exports = class RecordController {
     }
 
     const record = {
+      responsible,
       multidisciplinary,
       note,
       forwarding,
@@ -34,7 +35,7 @@ module.exports = class RecordController {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
-      const createdRecord = await Record.create(record);
+      const createdRecord = await ResponsibleRecord.create(record);
 
       res.status(201).json({ message: "Registro criado com sucesso!", createdRecord })
     } catch (error) {
@@ -45,7 +46,7 @@ module.exports = class RecordController {
   static async getAllRecords(req, res) {
     
     try {
-      const records = await Record.findAll({
+      const records = await ResponsibleRecord.findAll({
         where: { StudentId: req.body.id }
       });
 
@@ -67,7 +68,7 @@ module.exports = class RecordController {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
-      const records = await Record.findAll({
+      const records = await ResponsibleRecord.findAll({
         where: { StudentId: idStudent }
       });
       console.log(records)
@@ -85,7 +86,7 @@ module.exports = class RecordController {
     const user = await getUserByToken(token)
     
     try {
-      const record = await Record.findByPk(id)
+      const record = await ResponsibleRecord.findByPk(id)
       const student = await Student.findByPk(record.StudentId)
       if(student.UserId != user.id){
         res.status(422).json({ message: `Você não tem autorização!` })
@@ -103,7 +104,7 @@ module.exports = class RecordController {
     const token = getToken(req)
     const user = await getUserByToken(token)
 
-    const { note, forwarding } = req.body
+    const { responsible, note, forwarding } = req.body
     let { multidisciplinary } = req.body
 
     if(!multidisciplinary){
@@ -111,19 +112,20 @@ module.exports = class RecordController {
     }
 
     const newRecord = {
+      responsible,
       multidisciplinary,
       note,
       forwarding,
     };
     
     try {
-      const record = await Record.findByPk(id)
+      const record = await ResponsibleRecord.findByPk(id)
       const student = await Student.findByPk(record.StudentId)
       if(student.UserId != user.id){
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
-      await Record.update(newRecord, { where: { id: id } });
+      await ResponsibleRecord.update(newRecord, { where: { id: id } });
       res.status(200).json({ message: 'Acolhimento atualizado com sucesso!', record })
     } catch (error) {
       console.log(error);

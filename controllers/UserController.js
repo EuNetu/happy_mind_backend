@@ -8,9 +8,9 @@ const jwt = require('jsonwebtoken')
 
 module.exports = class UserController {
   static async register(req, res) {
-    const { name, lastName, email, password, confirmpassword, code_area, phone } = req.body;
+    const { name, email, password, confirmpassword, code_area, phone } = req.body;
 
-    if (!name || !lastName || !email || !password || !confirmpassword || !code_area || !phone) {
+    if (!name || !email || !password || !confirmpassword || !code_area || !phone) {
       res.status(422).json({ message: "Envie todas as informações." })
       return
     }
@@ -39,7 +39,6 @@ module.exports = class UserController {
 
     const user = {
       name,
-      lastName,
       email,
       code_area,
       phone,
@@ -58,6 +57,7 @@ module.exports = class UserController {
     const { email, password } = req.body;
 
     const user = await User.findOne({ where: { email: email } });
+    console.log(user);
     if (!user) {
       res.status(422).json({ message: "usuário não encontrado." })
       return
@@ -119,7 +119,7 @@ module.exports = class UserController {
 
     const { name, lastName, email, confirmpassword, password, code_area, phone } = req.body;
 
-    const passwordMatch = bcrypt.compareSync(confirmpassword, user.password);
+    const passwordMatch = bcrypt.compareSync(password, user.password);
 
     if (!passwordMatch) {
       res.status(422).json({ message: 'Senha incorreta! Não foi possível realizar as alterações.' })
@@ -134,11 +134,13 @@ module.exports = class UserController {
       return
     }
 
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(password, salt);
 
     const newProfile = {
       name,
       lastName,
-      password,
+      password:hashedPassword,
       code_area,
       phone,
     };

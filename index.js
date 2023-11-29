@@ -8,7 +8,7 @@ const cors = require('cors');
 app.use(
   cors({
     Credentials: true,
-    origin: 'http://localhost:5000'
+    origin: 'http://localhost:3000'
   })
 )
 
@@ -18,12 +18,18 @@ app.use(express.json())
 
 // Rotas
 const UserRouters = require('./routers/UserRoutes')
-const ChildRouters = require('./routers/ChildRouters')
+const StudentRouters = require('./routers/StudentRouters')
 const RecordRouters = require('./routers/RecordRouters')
+const GroupRecordRouters = require('./routers/GroupRecordRouters')
+const TeacherRecordRouters = require('./routers/TeacherRecordRouters')
+const ResponsibleRecordRouters = require('./routers/ResponsibleRecordRouters')
 
 app.use('/user', UserRouters)
-app.use('/child', ChildRouters)
+app.use('/student', StudentRouters)
 app.use('/record', RecordRouters)
+app.use('/group', GroupRecordRouters)
+app.use('/teacher', TeacherRecordRouters)
+app.use('/responsible', ResponsibleRecordRouters)
 
 //sincronizar com o banco e observar a aplicação na porta 8000
 connection
