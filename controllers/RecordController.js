@@ -46,7 +46,10 @@ module.exports = class RecordController {
     
     try {
       const records = await Record.findAll({
-        where: { StudentId: req.body.id }
+        where: { StudentId: req.body.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       
@@ -68,7 +71,10 @@ module.exports = class RecordController {
         return
       }
       const records = await Record.findAll({
-        where: { StudentId: idStudent }
+        where: { StudentId: idStudent },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
       console.log(records)
       console.log(student)

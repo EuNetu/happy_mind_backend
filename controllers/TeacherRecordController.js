@@ -45,7 +45,10 @@ module.exports = class TeacherRecordController {
     
     try {
       const records = await TeacherRecord.findAll({
-        where: { UserId: user.id }
+        where: { UserId: user.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       
@@ -80,7 +83,10 @@ module.exports = class TeacherRecordController {
     const { filterNome } = req.body
     try {
       const records = await TeacherRecord.findAll({
-        where: { UserId: user.id, teacher: { [Op.like]: `%${filterNome}%` } }
+        where: { UserId: user.id, teacher: { [Op.like]: `%${filterNome}%` } },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       res.status(200).json({ records })

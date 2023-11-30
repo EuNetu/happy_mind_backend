@@ -1,5 +1,6 @@
 const Student = require('../models/Student')
 const User = require('../models/User')
+const sequelize = require('../db/connection')
 const createToken = require('../helpers/createToken')
 const getUserByToken = require('../helpers/getUserByToken')
 const getToken = require('../helpers/getToken')
@@ -7,6 +8,7 @@ const getToken = require('../helpers/getToken')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { Op } = require("sequelize");
+const Record = require('../models/Record')
 
 module.exports = class StudentController {
   static async createStudent(req, res) {
@@ -62,7 +64,10 @@ module.exports = class StudentController {
     console.log(user)
     try {
       const students = await Student.findAll({
-        where: { UserId: user.id }
+        where: { UserId: user.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       res.status(200).json({ students })
@@ -75,10 +80,13 @@ module.exports = class StudentController {
     const token = getToken(req)
     const user = await getUserByToken(token)
     const { filterNome } = req.body
-    
+
     try {
       const students = await Student.findAll({
-        where: { UserId: user.id, name: { [Op.like]: `%${filterNome}%` } }
+        where: { UserId: user.id, name: { [Op.like]: `%${filterNome}%` } },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       res.status(200).json({ students })
@@ -147,6 +155,83 @@ module.exports = class StudentController {
       }
       await Student.update(newStudent, { where: { id: id } });
       res.status(200).json({ message: 'Estudante atualizado com sucesso!', newStudent })
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  static async getStatistics(req, res) {
+    const token = getToken(req)
+    const user = await getUserByToken(token)
+
+    try {
+      const gender = await Student.findAll({
+        attributes: ['gender', [sequelize.fn('COUNT', sequelize.col('gender')), 'count']],
+        group: ['gender'],
+      });
+
+      const course = await Student.findAll({
+        attributes: [
+          'course',
+          [sequelize.fn('COUNT', sequelize.col('course')), 'count'],
+        ],
+        group: ['course'],
+      });
+  
+      const created = await Student.findAll({
+        attributes: [
+          [sequelize.fn('YEAR', sequelize.col('createdAt')), 'year'],
+          [sequelize.fn('COUNT', sequelize.col('createdAt')), 'count'],
+        ],
+        group: [sequelize.fn('YEAR', sequelize.col('createdAt'))],
+      });
+
+      const residentStudent = await Student.findAll({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.literal('CASE WHEN residentStudent = true THEN 1 ELSE 0 END')), 'resident'],
+          [sequelize.fn('SUM', sequelize.literal('CASE WHEN residentStudent = false THEN 1 ELSE 0 END')), 'no_resident'],
+        ],
+      });
+
+      const reasonForDemand = await Student.findAll({
+        attributes: [
+          'reasonForDemand',
+          [sequelize.fn('COUNT', sequelize.col('reasonForDemand')), 'count'],
+        ],
+        group: ['reasonForDemand'],
+      });
+
+      const multidisciplinary = await Record.findAll({
+        attributes: [
+          [sequelize.fn('SUM', sequelize.literal('CASE WHEN multidisciplinary = true THEN 1 ELSE 0 END')), 'multidisciplinary'],
+          [sequelize.fn('SUM', sequelize.literal('CASE WHEN multidisciplinary = false THEN 1 ELSE 0 END')), 'individual'],
+        ],
+      });
+
+      const resultStatistics = {
+        gender,
+        course,
+        created, 
+        residentStudent,
+        reasonForDemand,
+        multidisciplinary
+      }
+
+      function ordenarPorCount(arr) {
+        return arr.sort((a, b) => b.count - a.count);
+    }
+    
+    for (const key in resultStatistics) {
+        if (resultStatistics.hasOwnProperty(key)) {
+            const array = resultStatistics[key];
+    
+            if (array.every(item => item.hasOwnProperty('count'))) {
+                resultStatistics[key] = ordenarPorCount(array);
+            }
+        }
+    }
+
+      res.status(200).json({ resultStatistics })
     } catch (error) {
       console.log(error);
     }

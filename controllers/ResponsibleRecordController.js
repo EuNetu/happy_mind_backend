@@ -47,7 +47,10 @@ module.exports = class ResponsibleRecordController {
     
     try {
       const records = await ResponsibleRecord.findAll({
-        where: { StudentId: req.body.id }
+        where: { StudentId: req.body.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       
@@ -69,7 +72,10 @@ module.exports = class ResponsibleRecordController {
         return
       }
       const records = await ResponsibleRecord.findAll({
-        where: { StudentId: idStudent }
+        where: { StudentId: idStudent },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
       console.log(records)
       console.log(student)

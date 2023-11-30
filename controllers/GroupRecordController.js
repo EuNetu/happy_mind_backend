@@ -45,7 +45,10 @@ module.exports = class GroupRecordController {
     
     try {
       const records = await GroupRecord.findAll({
-        where: { UserId: user.id }
+        where: { UserId: user.id },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       
@@ -80,7 +83,10 @@ module.exports = class GroupRecordController {
     const { filterNome } = req.body
     try {
       const records = await GroupRecord.findAll({
-        where: { UserId: user.id, reason: { [Op.like]: `%${filterNome}%` } }
+        where: { UserId: user.id, reason: { [Op.like]: `%${filterNome}%` } },
+        order: [
+          ['createdAt', 'DESC'],
+        ]
       });
 
       res.status(200).json({ records })
