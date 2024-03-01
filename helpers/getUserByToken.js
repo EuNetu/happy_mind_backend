@@ -12,7 +12,6 @@ const getUserByToken = async (token) => {
   const decoded = jwt.verify(token, "happymind");
 
   const user = await User.findByPk(decoded.id);
-  // console.log(user);
 
   return user;
 };

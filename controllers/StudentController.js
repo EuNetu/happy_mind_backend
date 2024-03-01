@@ -13,16 +13,16 @@ const Record = require('../models/Record')
 module.exports = class StudentController {
   static async createStudent(req, res) {
     const { name, gender, matriculation, course, academicStatus, birth, locality, code_area, phone, email, levelEducation, reasonForDemand, typeTreatment } = req.body
-    let {isColleger,residentStudent} = req.body
-    if (!name || !gender || !matriculation || !course || !academicStatus || !birth || !locality || !code_area || !phone || !email || !levelEducation  || !reasonForDemand || !typeTreatment ) {
+    let { isColleger, residentStudent } = req.body
+    if (!name || !gender || !matriculation || !course || !academicStatus || !birth || !locality || !code_area || !phone || !email || !levelEducation || !reasonForDemand || !typeTreatment) {
       res.status(422).json({ message: "Envie todas as informações." })
       return
     }
 
-    if(!isColleger){
+    if (!isColleger) {
       isColleger = false
     }
-    if(!residentStudent){
+    if (!residentStudent) {
       residentStudent = false
     }
 
@@ -79,11 +79,44 @@ module.exports = class StudentController {
   static async getAllStudentsWithFilters(req, res) {
     const token = getToken(req)
     const user = await getUserByToken(token)
-    const { filterNome } = req.body
+    let { filterNome , filterMasculino, filterFeminino, filterResidentStudent, filterIsColleger, filterLevelEducation} = req.body
+    let filterGender = "";
+
+    if (!filterNome) {
+      filterNome = ""
+    }
+
+    if (!filterLevelEducation) {
+      filterLevelEducation = ""
+    }
+
+    if(!(filterMasculino == true && filterFeminino == true) || (!filterMasculino && !filterFeminino)){
+      if(filterMasculino)filterGender = "Masculino"
+      if(filterFeminino)filterGender = "Feminino"
+    }
+
+    if(filterResidentStudent == true){
+      filterResidentStudent = 1
+    }else{
+      filterResidentStudent = ""
+    }
+
+    if(filterIsColleger == true){
+      filterIsColleger = 1
+    }else{
+      filterIsColleger = ""
+    }
 
     try {
       const students = await Student.findAll({
-        where: { UserId: user.id, name: { [Op.like]: `%${filterNome}%` } },
+        where: { 
+          UserId: user.id, 
+          name: { [Op.like]: `%${filterNome}%` },
+          gender: { [Op.like]: `%${filterGender}%` },
+          residentStudent: { [Op.like]: `%${filterResidentStudent}%` },
+          isColleger: { [Op.like]: `%${filterIsColleger}%` },
+          levelEducation: { [Op.like]: `%${filterLevelEducation}%` },
+        },
         order: [
           ['createdAt', 'DESC'],
         ]
@@ -115,17 +148,17 @@ module.exports = class StudentController {
     const user = await getUserByToken(token)
 
     const { name, gender, matriculation, course, academicStatus, birth, locality, code_area, phone, email, levelEducation, reasonForDemand, typeTreatment } = req.body
-    let {isColleger,residentStudent} = req.body
+    let { isColleger, residentStudent } = req.body
 
-    if (!name || !gender || !matriculation || !course || !academicStatus || !birth || !locality || !code_area || !phone || !email || !levelEducation  || !reasonForDemand || !typeTreatment ) {
+    if (!name || !gender || !matriculation || !course || !academicStatus || !birth || !locality || !code_area || !phone || !email || !levelEducation || !reasonForDemand || !typeTreatment) {
       res.status(422).json({ message: "Envie todas as informações." })
       return
     }
-    
-    if(!isColleger){
+
+    if (!isColleger) {
       isColleger = false
     }
-    if(!residentStudent){
+    if (!residentStudent) {
       residentStudent = false
     }
 
@@ -146,10 +179,10 @@ module.exports = class StudentController {
       reasonForDemand,
       typeTreatment,
     };
-    
+
     try {
       const student = await Student.findByPk(id)
-      if(student.UserId != user.id){
+      if (student.UserId != user.id) {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
@@ -167,6 +200,7 @@ module.exports = class StudentController {
     try {
       const gender = await Student.findAll({
         attributes: ['gender', [sequelize.fn('COUNT', sequelize.col('gender')), 'count']],
+        where: {UserId: user.id},
         group: ['gender'],
       });
 
@@ -175,14 +209,16 @@ module.exports = class StudentController {
           'course',
           [sequelize.fn('COUNT', sequelize.col('course')), 'count'],
         ],
+        where: {UserId: user.id},
         group: ['course'],
       });
-  
+
       const created = await Student.findAll({
         attributes: [
           [sequelize.fn('YEAR', sequelize.col('createdAt')), 'year'],
           [sequelize.fn('COUNT', sequelize.col('createdAt')), 'count'],
         ],
+        where: {UserId: user.id},
         group: [sequelize.fn('YEAR', sequelize.col('createdAt'))],
       });
 
@@ -191,6 +227,7 @@ module.exports = class StudentController {
           [sequelize.fn('SUM', sequelize.literal('CASE WHEN residentStudent = true THEN 1 ELSE 0 END')), 'resident'],
           [sequelize.fn('SUM', sequelize.literal('CASE WHEN residentStudent = false THEN 1 ELSE 0 END')), 'no_resident'],
         ],
+        where: {UserId: user.id},
       });
 
       const reasonForDemand = await Student.findAll({
@@ -198,6 +235,7 @@ module.exports = class StudentController {
           'reasonForDemand',
           [sequelize.fn('COUNT', sequelize.col('reasonForDemand')), 'count'],
         ],
+        where: {UserId: user.id},
         group: ['reasonForDemand'],
       });
 
@@ -211,7 +249,7 @@ module.exports = class StudentController {
       const resultStatistics = {
         gender,
         course,
-        created, 
+        created,
         residentStudent,
         reasonForDemand,
         multidisciplinary
@@ -219,17 +257,17 @@ module.exports = class StudentController {
 
       function ordenarPorCount(arr) {
         return arr.sort((a, b) => b.count - a.count);
-    }
-    
-    for (const key in resultStatistics) {
+      }
+
+      for (const key in resultStatistics) {
         if (resultStatistics.hasOwnProperty(key)) {
-            const array = resultStatistics[key];
-    
-            if (array.every(item => item.hasOwnProperty('count'))) {
-                resultStatistics[key] = ordenarPorCount(array);
-            }
+          const array = resultStatistics[key];
+
+          if (array.every(item => item.hasOwnProperty('count'))) {
+            resultStatistics[key] = ordenarPorCount(array);
+          }
         }
-    }
+      }
 
       res.status(200).json({ resultStatistics })
     } catch (error) {

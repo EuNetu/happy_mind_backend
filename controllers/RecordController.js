@@ -1,8 +1,39 @@
-const Record = require('../models/Record')
-const Student = require('../models/Student')
+const Record = require('../models/Record');
+const Student = require('../models/Student');
+const getUserByToken = require('../helpers/getUserByToken');
+const getToken = require('../helpers/getToken');
 
-const getUserByToken = require('../helpers/getUserByToken')
-const getToken = require('../helpers/getToken')
+
+// const crypto = require('crypto');
+
+// const DADOS_CRIPTOGRAFAR = {
+//   algoritmo : "aes256",
+//   codificacao : "utf8",
+//   segredo : "chaves",
+//   tipo : "hex"
+// };
+
+// function criptografar(senha) {
+//   const cipher = crypto.createCipher(DADOS_CRIPTOGRAFAR.algoritmo, DADOS_CRIPTOGRAFAR.segredo);
+//   cipher.update(senha);
+//   return cipher.final(DADOS_CRIPTOGRAFAR.tipo);
+// };
+
+// function descriptografar(senha) {
+//   try {
+//     const decipher = crypto.createDecipher(DADOS_CRIPTOGRAFAR.algoritmo, DADOS_CRIPTOGRAFAR.segredo);
+//     let decrypted = decipher.update(senha, DADOS_CRIPTOGRAFAR.tipo, DADOS_CRIPTOGRAFAR.codificacao);
+//     decrypted += decipher.final(DADOS_CRIPTOGRAFAR.codificacao);
+//     return decrypted;
+//   } catch (error) {
+//     console.error('Erro ao descriptografar:', error);
+//     throw new Error('Falha na descriptografia');
+//   }
+// }
+
+
+
+
 
 module.exports = class RecordController {
   static async createRecord(req, res) {
@@ -15,7 +46,7 @@ module.exports = class RecordController {
 
     let { multidisciplinary } = req.body
 
-    if(!multidisciplinary){
+    if (!multidisciplinary) {
       multidisciplinary = false
     }
 
@@ -23,14 +54,14 @@ module.exports = class RecordController {
       multidisciplinary,
       note,
       forwarding,
-      StudentId : idStudent
+      StudentId: idStudent
     };
     const token = getToken(req)
     const user = await getUserByToken(token)
-    
+
     try {
       const student = await Student.findByPk(idStudent)
-      if(student.UserId != user.id){
+      if (student.UserId != user.id) {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
@@ -43,30 +74,13 @@ module.exports = class RecordController {
   }
 
   static async getAllRecords(req, res) {
-    
-    try {
-      const records = await Record.findAll({
-        where: { StudentId: req.body.id },
-        order: [
-          ['createdAt', 'DESC'],
-        ]
-      });
-
-      
-      res.status(200).json({ records })
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  static async getAllRecords(req, res) {
     const idStudent = req.params.id
     const token = getToken(req)
     const user = await getUserByToken(token)
-    
+
     try {
       const student = await Student.findByPk(idStudent)
-      if(student.UserId != user.id){
+      if (student.UserId != user.id) {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
@@ -76,12 +90,15 @@ module.exports = class RecordController {
           ['createdAt', 'DESC'],
         ]
       });
-      console.log(records)
-      console.log(student)
-      
-      res.status(200).json({ records, student })
+
+      // for (let i = 0; i < records.length; i++) {
+      //   records[i].note = descriptografar( records[i].note)
+      // }
+
+      res.status(200).json({ records, student });
     } catch (error) {
-      console.log(error);
+      console.error('Erro ao obter registros:', error);
+      res.status(500).json({ message: 'Erro interno do servidor' });
     }
   }
 
@@ -89,15 +106,18 @@ module.exports = class RecordController {
     const id = req.params.id
     const token = getToken(req)
     const user = await getUserByToken(token)
-    
+
     try {
-      const record = await Record.findByPk(id)
+      let record = await Record.findByPk(id)
       const student = await Student.findByPk(record.StudentId)
-      if(student.UserId != user.id){
+      if (student.UserId != user.id) {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
-      
+      // record = {
+      //   ...record,
+      //   note: descriptografar(record.note)
+      // }
       res.status(200).json({ record })
     } catch (error) {
       console.log(error);
@@ -112,7 +132,7 @@ module.exports = class RecordController {
     const { note, forwarding } = req.body
     let { multidisciplinary } = req.body
 
-    if(!multidisciplinary){
+    if (!multidisciplinary) {
       multidisciplinary = false
     }
 
@@ -121,11 +141,11 @@ module.exports = class RecordController {
       note,
       forwarding,
     };
-    
+
     try {
       const record = await Record.findByPk(id)
       const student = await Student.findByPk(record.StudentId)
-      if(student.UserId != user.id){
+      if (student.UserId != user.id) {
         res.status(422).json({ message: `Você não tem autorização!` })
         return
       }
